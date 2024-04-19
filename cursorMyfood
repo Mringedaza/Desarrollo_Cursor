@@ -1,0 +1,35 @@
+use myfood; 
+
+DELIMITER //
+
+CREATE PROCEDURE salarioMayor(IN salarioLimite DECIMAL(10,2))
+BEGIN
+    DECLARE hecho INT DEFAULT FALSE;
+    DECLARE empleadoId INT;
+    DECLARE empleadoNombre varchar (100);
+    DECLARE empleadoApellido varchar(100);
+    DECLARE empleadoSucursal INT;
+    DECLARE empleadoSalario DECIMAL(10,2);
+
+    DECLARE empleadosCursor CURSOR FOR 
+        SELECT Cedula, idSucursal, salario, nombre, apellido
+        FROM vendedor
+        WHERE salario > salarioLimite;
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET hecho = TRUE;
+
+    OPEN empleadosCursor;
+
+    empleadosLoop: LOOP
+        FETCH empleadosCursor INTO empleadoId, empleadoSucursal, 
+			empleadoSalario, empleadoNombre, empleadoApellido;
+        IF hecho THEN
+            LEAVE empleadosLoop;
+        END IF;
+        SELECT CONCAT(Cedula, ' ', idSucursal, ' - ', salario,
+        nombre, ' - ', apellido) AS empleadoInfo 
+        FROM vendedor WHERE  Cedula = empleadoId;
+    END LOOP;
+
+    CLOSE empleadosCursor;
+END//
